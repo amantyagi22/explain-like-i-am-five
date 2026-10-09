@@ -116,54 +116,111 @@ The app keeps no history and stores nothing.
 
 ## Future scope
 
-Right now the app gives one short paragraph and stops.
-The ideas below make each answer teach more, while keeping it at a five-year-old's level.
+Right now the app gives one short paragraph and stops, and it is shaped around one idea: ELI5.
+The plan below turns it into a real product: "understand anything around you in plain language", for kids and adults alike.
+ELI5 becomes one setting, not the whole identity.
 
-### Answers that teach more
+### Before launch
 
-- **Ask "why?" again.**
-  Add a "Why?" button under each answer that goes one step deeper, the way a curious kid keeps asking.
-  Each step stays at the same simple level, so you build understanding in small bites instead of one big paragraph.
+These come before any new feature.
+
+- **Move off Gemini's free tier.**
+  Google may use free-tier inputs to train its models.
+  Real users will snap medical bills, contracts, and their homes, so a paid product can't make that privacy promise on the free tier.
+- **Rate limit and accounts.**
+  The route has no auth today, so one script could drain the quota or, on a paid model, run up a bill.
+  Required before switching to a paid model, as noted in `app/api/explain/route.ts`.
+- **Installable app.**
+  Ship it as a PWA with an icon and splash screen, or as a native app, so it feels like a product and not a browser tab.
+- **Accuracy and safety guardrails.**
+  Medical, legal, and safety answers need clear limits, such as "this is general info, check with a professional".
+  An adult acting on a wrong answer is a real liability.
+
+### Core upgrades for everyone
+
+- **Pick a level.**
+  A switch between "Like I'm 5", "Like I'm 15", and "Expert, but plain" changes how deep the answer goes.
+  This one control is what makes the app work for both kids and adults.
+- **Ask follow-up questions.**
+  Add a "Why?" button and a short follow-up chat under each answer, such as "is it safe?" or "how much does it cost?".
+  Each step stays at the chosen level, so understanding builds in small bites instead of one big paragraph.
 - **Answer cards.**
   Switch from one paragraph to a small card with the name, what it is, what it's for, and one fun fact.
-  Short labeled parts are easier to scan than a block of text, especially for early readers.
-- **Show how big it is.**
-  Compare the size to things a child knows, like "as long as your arm" or "as heavy as a cat", with a small picture next to it.
-- **"Is it safe?" note.**
-  Add a clear, friendly warning for things that are hot, sharp, poisonous, or not to be touched.
+  Short labeled parts are easier to scan than a block of text.
+- **Voice in and out.**
+  Ask out loud and hear the answer.
+  This helps hands-free use, accessibility, and children who can't read yet.
+- **Point at a part.**
+  Tap or circle one region of the photo to explain just that, and draw a soft outline around the object being explained.
 - **Tap a word to explain it.**
   When a harder word slips in, make it tappable to get a one-line explanation of just that word.
+- **"Is it safe?" note.**
+  Add a clear, friendly warning for things that are hot, sharp, poisonous, or not to be touched.
+- **More languages.**
+  Let people choose the language of the answer, which also opens up large non-English markets.
 
-### Easier for young children
+### Modes for adults
 
-- **Read it aloud.**
-  Many five-year-olds can't read yet, so a speaker button (and an auto-play option) would let them use the app on their own.
-- **Point at the thing.**
-  Draw a soft outline around the object being explained, so it's clear which part of the photo the answer is about.
-- **Tap to choose.**
-  When a photo has several things in it, let the child tap the one they're curious about.
-- **Guess first.**
-  Before revealing the answer, ask "What do you think it is?" to turn each snap into a small game.
-- **Pick a level.**
-  A simple switch between "I'm 5", "I'm 10", and "grown-up" changes how deep the answer goes, so the app grows with the child.
+- **Explain a document.**
+  Snap a bill, lease, insurance letter, medical report, or tax form and get what it means and what you need to do.
+  This is likely the strongest reason for adults to pay.
+- **Explain a label.**
+  Food ingredients, medicine leaflets, skincare, and laundry symbols, in plain words.
+- **"Is this a good deal?"**
+  Snap a product or price tag to learn what it is, what it's for, and what to watch out for.
+- **Fix-it mode.**
+  Snap a warning light, error screen, or broken appliance to learn what's wrong and the next step.
+- **Travel mode.**
+  Snap a sign, menu, monument, or dish and get it translated and explained in context.
+- **Study mode.**
+  Snap a textbook page, diagram, or equation and get it explained step by step.
+- **Work mode.**
+  Snap a chart, slide, or whiteboard and get the key takeaway.
 
-### Remembering and sharing
-
-- **Sticker book.**
-  Save each snap as a sticker with its emoji and name, so children can look back at everything they discovered.
-- **Daily discovery.**
-  Suggest one thing to go find each day ("find something that floats"), to get kids exploring away from the screen.
-- **Share with family.**
-  Send a snap and its explanation to a parent or grandparent as a picture card.
-
-### Making it ready for real kids
+### Modes for kids
 
 - **Kids mode with parent controls.**
   Today the prompt is written for adults using an ELI5 style.
   A real kids mode needs a stricter prompt, content filters, and a parent setting to turn it on.
-- **More languages.**
-  Let families choose the language of the answer, so children can learn in the language they speak at home.
+- **Show how big it is.**
+  Compare the size to things a child knows, like "as long as your arm" or "as heavy as a cat", with a small picture next to it.
+- **Tap to choose.**
+  When a photo has several things in it, let the child tap the one they're curious about.
+- **Guess first.**
+  Before revealing the answer, ask "What do you think it is?" to turn each snap into a small game.
+- **Daily discovery.**
+  Suggest one thing to go find each day ("find something that floats"), to get kids exploring away from the screen.
+
+### Remembering and sharing
+
+- **History and collections.**
+  Save every snap, search past answers, and group them into folders.
+  For kids, show it as a sticker book with each snap's emoji and name.
+- **Share card.**
+  Turn a snap and its explanation into a well-designed picture card to send to family or post online.
+  Every share is free marketing.
 - **Works offline for common things.**
   Cache answers for everyday objects so the app still works on a weak connection.
-- **Rate limit and passcode.**
-  Required before switching to a paid model, as noted in `app/api/explain/route.ts`.
+
+### Business model
+
+- **Freemium.**
+  A few free snaps a day, then a plan at around $3-5 a month for unlimited snaps, document mode, history, and voice.
+- **Family plan.**
+  Kids mode with parent controls plus adult mode on one subscription.
+- **Partnerships later.**
+  Museums, zoos, and schools license a branded "explain this exhibit" version.
+
+### Standing out
+
+Google Lens, ChatGPT's camera, and Apple Visual Intelligence already cover parts of this.
+The edge is speed and simplicity: one tap gives an instant, plain-language answer with no chat needed.
+Keep the camera-first, zero-setup feel, and don't turn into another chatbot.
+
+### Suggested order
+
+1. Paid model, rate limit, and installable app.
+2. Level switch.
+3. Document and label explainer.
+4. Follow-up questions and history.
+5. Share cards.
