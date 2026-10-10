@@ -1,6 +1,7 @@
 import { streamText, type LanguageModel } from "ai";
 import { model as defaultModel } from "@/lib/model";
-import { SYSTEM_PROMPT } from "./prompt";
+import { DEFAULT_LEVEL, isLevel } from "@/lib/levels";
+import { systemPrompt } from "./prompt";
 
 // Under Vercel's 4.5 MB function body limit. The client downscales to 1024px JPEG, far below this.
 const MAX_BYTES = 4 * 1024 * 1024;
@@ -8,9 +9,12 @@ const MAX_BYTES = 4 * 1024 * 1024;
 const IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"]);
 
 export async function explain(req: Request, model: LanguageModel = defaultModel): Promise<Response> {
-  const image = (await req.formData().catch(() => null))?.get("image");
+  const form = await req.formData().catch(() => null);
+  const image = form?.get("image");
   if (!(image instanceof File) || !IMAGE_TYPES.has(image.type))
     return new Response("Send one image file in the 'image' field.", { status: 400 });
+  const level = form?.get("level") ?? DEFAULT_LEVEL; // optional, so older clients still get the ELI5 answer
+  if (!isLevel(level)) return new Response("Unknown level.", { status: 400 });
   if (image.size > MAX_BYTES) return new Response("Image is over 4 MB.", { status: 413 });
 
   const data = new Uint8Array(await image.arrayBuffer());
@@ -18,7 +22,7 @@ export async function explain(req: Request, model: LanguageModel = defaultModel)
     textOf(
       streamText({
         model,
-        system: SYSTEM_PROMPT,
+        system: systemPrompt(level),
         messages: [{ role: "user", content: [{ type: "file", mediaType: image.type, data }] }],
         abortSignal: req.signal, // stop spending quota when the user leaves mid-answer
         maxRetries: 0, // retries are handled below so a quota 429 fails fast instead of backing off

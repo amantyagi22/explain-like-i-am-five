@@ -2,7 +2,7 @@ import { APICallError, simulateReadableStream } from "ai";
 import { MockLanguageModelV4 } from "ai/test";
 import { describe, expect, it } from "vitest";
 import { explain } from "./explain";
-import { SYSTEM_PROMPT } from "./prompt";
+import { systemPrompt } from "./prompt";
 
 function mockModel(...deltas: string[]) {
   return new MockLanguageModelV4({
@@ -26,9 +26,10 @@ function mockModel(...deltas: string[]) {
   });
 }
 
-function upload(file?: File) {
+function upload(file?: File, level?: string) {
   const body = new FormData();
   if (file) body.append("image", file);
+  if (level !== undefined) body.append("level", level);
   return new Request("http://localhost/api/explain", { method: "POST", body });
 }
 
@@ -47,7 +48,7 @@ describe("explain route", () => {
     await (await explain(upload(jpeg()), model)).text();
 
     const prompt = model.doStreamCalls[0].prompt;
-    expect(prompt).toContainEqual({ role: "system", content: SYSTEM_PROMPT });
+    expect(prompt).toContainEqual({ role: "system", content: systemPrompt("5") });
     expect(prompt).toContainEqual(
       expect.objectContaining({
         role: "user",
@@ -60,6 +61,22 @@ describe("explain route", () => {
         ],
       }),
     );
+  });
+
+  it("uses the prompt for the chosen level", async () => {
+    const model = mockModel("ok");
+    await (await explain(upload(jpeg(), "expert"), model)).text();
+
+    expect(model.doStreamCalls[0].prompt).toContainEqual({ role: "system", content: systemPrompt("expert") });
+    expect(systemPrompt("expert")).not.toBe(systemPrompt("5"));
+  });
+
+  it("rejects an unknown level with 400, without calling the model", async () => {
+    const model = mockModel("never");
+    const res = await explain(upload(jpeg(), "42"), model);
+
+    expect(res.status).toBe(400);
+    expect(model.doStreamCalls).toHaveLength(0);
   });
 
   it("rejects a request with no file with 400, without calling the model", async () => {

@@ -5,6 +5,7 @@ Point your phone at anything and get it explained like you're five.
 ELI5 Camera is a mobile web app that opens straight into your rear camera.
 Tap the shutter, the frame freezes, and a short, plain-language explanation streams in word by word.
 Every answer starts with an emoji and the name of the thing, then explains it in 2-4 simple sentences with one comparison a child would get.
+A switch above the shutter changes the level to "Like I'm 15" or "Expert" for a deeper answer, and switching after a snap re-explains the same photo.
 
 It runs on Gemini's free tier and Vercel's free Hobby plan, so it costs nothing to run.
 
@@ -35,8 +36,9 @@ Screenshots are taken at iPhone 15 Pro size with a sample photo and sample answe
 
 | Request | Response |
 | --- | --- |
-| One image in the `image` form field | `200`, streamed plain text |
+| One image in the `image` form field, and an optional `level` field (`5`, `15`, or `expert`, default `5`) | `200`, streamed plain text |
 | No file, or not a JPEG / PNG / WebP / HEIC | `400` |
+| Unknown `level` | `400` |
 | Image over 4 MB | `413` |
 | Gemini free quota used up | `429`, shown as "I'm all out of explanations for now" |
 | Any other model failure | `502` after one quiet retry, shown as "tap to try again" |
@@ -92,12 +94,14 @@ app/
   page.tsx                 the single screen
   eli5-camera.tsx          camera stream, shutter, freeze, upload fallback
   explanation-panel.tsx    sends the photo, streams the answer, error and quota states
+  level-switch.tsx         the "Like I'm 5 / 15 / Expert" switch
   api/explain/
     route.ts               POST /api/explain
     explain.ts             validation, model call, status mapping
-    prompt.ts              the ELI5 system prompt
+    prompt.ts              the system prompt for each level
     explain.test.ts        route tests with a mock model
 lib/
+  levels.ts                the levels, shared by the page and the route
   model.ts                 the one place the model is chosen
   prepare-image.ts         shrink any image to a 1024px JPEG
 ```
@@ -138,9 +142,8 @@ These come before any new feature.
 
 ### Core upgrades for everyone
 
-- **Pick a level.**
-  A switch between "Like I'm 5", "Like I'm 15", and "Expert, but plain" changes how deep the answer goes.
-  This one control is what makes the app work for both kids and adults.
+- **Remember the level.**
+  The level resets to "Like I'm 5" on every visit; save it on the device so adults don't switch it each time.
 - **Ask follow-up questions.**
   Add a "Why?" button and a short follow-up chat under each answer, such as "is it safe?" or "how much does it cost?".
   Each step stays at the chosen level, so understanding builds in small bites instead of one big paragraph.
@@ -220,7 +223,6 @@ Keep the camera-first, zero-setup feel, and don't turn into another chatbot.
 ### Suggested order
 
 1. Paid model, rate limit, and installable app.
-2. Level switch.
-3. Document and label explainer.
-4. Follow-up questions and history.
-5. Share cards.
+2. Document and label explainer.
+3. Follow-up questions and history.
+4. Share cards.

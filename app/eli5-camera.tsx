@@ -2,8 +2,10 @@
 
 import { CameraSlash, ImageSquare } from "@phosphor-icons/react";
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
+import { DEFAULT_LEVEL, type Level } from "@/lib/levels";
 import { prepareImage } from "@/lib/prepare-image";
 import { ExplanationPanel } from "./explanation-panel";
+import { LevelSwitch } from "./level-switch";
 
 type Camera = { status: "starting" | "on" } | { status: "off"; reason: string };
 type Photo = { blob: Blob; url: string };
@@ -17,6 +19,7 @@ export function Eli5Camera() {
   const [photo, setPhoto] = useState<Photo | null>(null);
   const [capturing, setCapturing] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [level, setLevel] = useState<Level>(DEFAULT_LEVEL);
 
   useEffect(() => {
     let stream: MediaStream | undefined;
@@ -107,10 +110,13 @@ export function Eli5Camera() {
             {camera.reason} You can still upload a photo to explain.
           </p>
           {notice && <p className="mt-4 text-sm text-accent">{notice}</p>}
+          <div className="mt-8">
+            <LevelSwitch level={level} onChange={setLevel} />
+          </div>
           <button
             onClick={pickPhoto}
             disabled={capturing}
-            className="mt-8 h-14 w-full rounded-full bg-accent text-base font-semibold text-zinc-950 transition-transform active:scale-[0.98] disabled:opacity-50"
+            className="mt-4 h-14 w-full rounded-full bg-accent text-base font-semibold text-zinc-950 transition-transform active:scale-[0.98] disabled:opacity-50"
           >
             Upload a photo instead
           </button>
@@ -123,6 +129,9 @@ export function Eli5Camera() {
             <p className="mb-6 text-center text-sm text-zinc-400">Starting the camera…</p>
           )}
           {notice && <p className="mb-6 text-center text-sm text-accent">{notice}</p>}
+          <div className="mb-6">
+            <LevelSwitch level={level} onChange={setLevel} />
+          </div>
           <div className="grid grid-cols-3 items-center">
             <button
               onClick={pickPhoto}
@@ -148,6 +157,8 @@ export function Eli5Camera() {
         <ExplanationPanel
           key={photo.url}
           photo={photo.blob}
+          level={level}
+          onLevelChange={setLevel}
           onClose={backToCamera}
           closeLabel={cameraAvailable ? "Snap another" : "Try another photo"}
         />

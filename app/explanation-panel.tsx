@@ -2,6 +2,8 @@
 
 import { ArrowClockwise } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
+import type { Level } from "@/lib/levels";
+import { LevelSwitch } from "./level-switch";
 
 type Explanation =
   | { status: "waiting" }
@@ -9,8 +11,20 @@ type Explanation =
   | { status: "quota" | "error" };
 
 // Sends the prepared photo to the explain route and streams the answer into a sheet over the bottom of the photo.
-// Mount it with a key per photo so each new photo starts fresh.
-export function ExplanationPanel({ photo, onClose, closeLabel }: { photo: Blob; onClose: () => void; closeLabel: string }) {
+// Mount it with a key per photo so each new photo starts fresh. Changing the level re-explains the same photo.
+export function ExplanationPanel({
+  photo,
+  level,
+  onLevelChange,
+  onClose,
+  closeLabel,
+}: {
+  photo: Blob;
+  level: Level;
+  onLevelChange: (level: Level) => void;
+  onClose: () => void;
+  closeLabel: string;
+}) {
   const [explanation, setExplanation] = useState<Explanation>({ status: "waiting" });
   const [attempt, setAttempt] = useState(0);
 
@@ -19,6 +33,7 @@ export function ExplanationPanel({ photo, onClose, closeLabel }: { photo: Blob; 
     (async () => {
       const body = new FormData();
       body.append("image", photo, "photo.jpg");
+      body.append("level", level);
       const res = await fetch("/api/explain", { method: "POST", body, signal: abort.signal });
       if (!res.ok || !res.body) return setExplanation({ status: res.status === 429 ? "quota" : "error" });
 
@@ -33,11 +48,16 @@ export function ExplanationPanel({ photo, onClose, closeLabel }: { photo: Blob; 
       if (!abort.signal.aborted) setExplanation({ status: "error" });
     });
     return () => abort.abort();
-  }, [photo, attempt]);
+  }, [photo, level, attempt]);
 
   function retry() {
     setExplanation({ status: "waiting" });
     setAttempt((n) => n + 1);
+  }
+
+  function changeLevel(next: Level) {
+    setExplanation({ status: "waiting" });
+    onLevelChange(next);
   }
 
   return (
@@ -46,7 +66,11 @@ export function ExplanationPanel({ photo, onClose, closeLabel }: { photo: Blob; 
       aria-busy={explanation.status === "waiting" || explanation.status === "streaming"}
       className="sheet-in absolute inset-x-0 bottom-0 rounded-t-[28px] border-t border-white/10 bg-zinc-950/80 px-6 pt-6 pb-[max(env(safe-area-inset-bottom),1.25rem)] shadow-[0_-24px_60px_rgb(9_9_11/0.5)] backdrop-blur-xl"
     >
-      <div className="max-h-[52dvh] overflow-y-auto overscroll-contain">
+      <div className="mb-5">
+        <LevelSwitch level={level} onChange={changeLevel} />
+      </div>
+      {/* Fade the bottom edge so a long answer reads as scrollable instead of cut off; pb-6 lets the last line clear the fade. */}
+      <div className="max-h-[52dvh] overflow-y-auto overscroll-contain pb-6 [mask-image:linear-gradient(to_bottom,black_calc(100%-2rem),transparent)]">
         {explanation.status === "waiting" && (
           <div className="shimmer space-y-3 py-1" aria-label="Thinking">
             <div className="h-5 w-2/5 rounded-full bg-white/15" />
