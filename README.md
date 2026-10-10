@@ -9,6 +9,12 @@ A switch above the shutter changes the level to "Like I'm 15" or "Expert" for a 
 
 It runs on Gemini's free tier and Vercel's free Hobby plan, so it costs nothing to run.
 
+## Demo
+
+[![Watch the ELI5 Camera demo video](docs/demo.jpg)](docs/demo.mp4)
+
+Click the image to watch the video.
+
 ## Screenshots
 
 | Point at something | Thinking | Streaming in | Done |
